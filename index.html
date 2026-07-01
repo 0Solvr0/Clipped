@@ -61,10 +61,8 @@ input,select{font-family:inherit;color:inherit}
 a{color:inherit}
 ::selection{background:var(--accent);color:#fff}
 
-/* focus ring */
 :focus-visible{outline:2px solid var(--accent-hover);outline-offset:2px;border-radius:4px}
 
-/* scrollbars */
 ::-webkit-scrollbar{width:9px;height:9px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
@@ -406,20 +404,32 @@ a{color:inherit}
   box-shadow:0 0 0 1px rgba(255,255,255,.06), var(--shadow-lg);
   transition:aspect-ratio var(--t-med);
 }
-.video-frame-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:26px 26px;opacity:.5}
+.video-frame-grid{position:absolute;inset:0;z-index:0;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:26px 26px;opacity:.5;pointer-events:none}
+
+.player-embed{position:absolute;inset:0;z-index:1;background:#000;overflow:hidden}
+.player-embed iframe{position:absolute;top:50%;left:50%;width:100%;height:100%;min-width:100%;min-height:100%;border:0;pointer-events:none;transform:translate(-50%,-50%) scale(1.35)}
+
+.player-loading{position:absolute;inset:0;z-index:5;display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px;background:rgba(6,6,8,.55);backdrop-filter:blur(2px)}
+.video-frame.is-player-loading .player-loading{display:flex}
+.player-loading svg{width:24px;height:24px;color:var(--accent-hover);animation:spin .9s linear infinite}
+.player-loading span{font-size:11px;color:var(--text-secondary);font-family:var(--font-mono)}
+
 .video-time-badge{
-  position:absolute;top:10px;left:10px;padding:4px 8px;border-radius:6px;
+  position:absolute;top:10px;left:10px;padding:4px 8px;border-radius:6px;z-index:4;
   background:rgba(0,0,0,.55);backdrop-filter:blur(4px);font-family:var(--font-mono);font-size:10.5px;color:#e4e4e7;
   border:1px solid rgba(255,255,255,.08);
 }
 .video-rec-badge{
-  position:absolute;top:10px;right:10px;display:flex;align-items:center;gap:5px;
+  position:absolute;top:10px;right:10px;display:flex;align-items:center;gap:5px;z-index:4;
   padding:4px 8px;border-radius:6px;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);
   font-size:10px;font-weight:700;color:#fca5a5;letter-spacing:.03em;border:1px solid rgba(255,255,255,.08);
+  transition:color var(--t-fast);
 }
+.video-rec-badge.is-live{color:#86efac}
 .video-rec-dot{width:6px;height:6px;border-radius:50%;background:#ef4444;animation:pulse-dot 1.4s infinite}
+.video-rec-badge.is-live .video-rec-dot{background:#22c55e}
 .video-play-btn{
-  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:4;
   width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.1);
   border:1px solid rgba(255,255,255,.25);backdrop-filter:blur(6px);
   display:flex;align-items:center;justify-content:center;color:#fff;transition:all var(--t-fast);
@@ -430,7 +440,7 @@ a{color:inherit}
 .video-play-btn:not(.is-playing) svg.icon-pause{display:none}
 
 .caption-overlay{
-  position:absolute;left:6%;right:6%;bottom:8%;
+  position:absolute;left:6%;right:6%;bottom:8%;z-index:3;pointer-events:none;
   display:flex;flex-wrap:wrap;justify-content:center;gap:.35em;
   text-align:center;
   font-weight:900;font-size:22px;line-height:1.25;
@@ -469,15 +479,19 @@ a{color:inherit}
 .timeline-handle.handle-start{left:20%;transform:translateX(-100%)}
 .timeline-handle.handle-end{left:45%}
 .timeline-controls{display:flex;align-items:center;gap:10px;margin-top:14px}
-.play-toggle{
+.play-toggle,.mute-toggle{
   width:34px;height:34px;border-radius:9px;background:var(--bg-input);border:1px solid var(--border);
   display:flex;align-items:center;justify-content:center;color:var(--text-primary);transition:all var(--t-fast);flex:0 0 auto;
 }
-.play-toggle:hover{border-color:var(--border-hover);background:var(--bg-card-hover)}
-.play-toggle svg{width:14px;height:14px}
+.play-toggle:hover,.mute-toggle:hover{border-color:var(--border-hover);background:var(--bg-card-hover)}
+.play-toggle svg,.mute-toggle svg{width:14px;height:14px}
 .play-toggle svg.icon-pause{display:none}
 .play-toggle.is-playing svg.icon-play{display:none}
 .play-toggle.is-playing svg.icon-pause{display:block}
+.mute-toggle svg.icon-vol-off{display:none}
+.mute-toggle.is-muted svg.icon-vol-on{display:none}
+.mute-toggle.is-muted svg.icon-vol-off{display:block}
+.mute-toggle.is-disabled{opacity:.35;pointer-events:none}
 .timeline-hint{font-size:11.5px;color:var(--text-tertiary)}
 
 /* clips sidebar */
@@ -555,7 +569,10 @@ a{color:inherit}
   max-width:300px;
 }
 .toast.success{border-color:rgba(34,197,94,.35)}
-.toast svg{width:15px;height:15px;color:var(--success);flex:0 0 auto}
+.toast.success svg{color:var(--success)}
+.toast.warn{border-color:rgba(245,158,11,.35)}
+.toast.warn svg{color:var(--warning)}
+.toast svg{width:15px;height:15px;flex:0 0 auto}
 @keyframes toast-in{to{transform:translateX(0);opacity:1}}
 .toast.is-leaving{animation:toast-out .25s var(--ease) forwards}
 @keyframes toast-out{to{transform:translateX(20px);opacity:0}}
@@ -763,7 +780,7 @@ a{color:inherit}
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
             </div>
             <h2>Drop in a link to get started</h2>
-            <p>ClipAI scans the full video, finds your strongest moments, and turns them into ready-to-post vertical clips with styled captions.</p>
+            <p>ClipAI scans the full video, finds your strongest moments, and turns them into ready-to-post vertical clips with styled captions. Paste a real YouTube or Vimeo link to preview it with sound.</p>
           </div>
 
           <div class="how-it-works">
@@ -822,8 +839,13 @@ a{color:inherit}
             <div class="editor-canvas-wrap">
               <div class="video-frame" id="video-frame" style="aspect-ratio:9/16">
                 <div class="video-frame-grid"></div>
+                <div class="player-embed" id="player-embed"></div>
+                <div class="player-loading" id="player-loading">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 11-9-9" stroke-linecap="round"/></svg>
+                  <span>Loading preview…</span>
+                </div>
                 <span class="video-time-badge" id="video-time-badge">0:00 / 0:38</span>
-                <span class="video-rec-badge"><span class="video-rec-dot"></span>PREVIEW</span>
+                <span class="video-rec-badge" id="video-rec-badge"><span class="video-rec-dot"></span><span id="video-rec-label">SIMULATED</span></span>
                 <button class="video-play-btn" id="canvas-play-btn" type="button" aria-label="Play preview">
                   <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                   <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
@@ -849,7 +871,11 @@ a{color:inherit}
                   <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                   <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
                 </button>
-                <span class="timeline-hint">Drag the handles to trim this clip</span>
+                <button class="mute-toggle" id="mute-toggle" type="button" aria-label="Mute or unmute preview" aria-pressed="false" title="Mute preview sound">
+                  <svg class="icon-vol-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 010 7"/><path d="M18.5 5.5a9 9 0 010 13"/></svg>
+                  <svg class="icon-vol-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9l5 6M21 9l-5 6"/></svg>
+                </button>
+                <span class="timeline-hint" id="timeline-hint">Drag the handles to trim this clip</span>
               </div>
             </div>
           </div>
@@ -925,7 +951,21 @@ a{color:inherit}
     ],
     selectedClipIndex: 0,
     playing: false,
+    muted: false,
     playheadPct: 20
+  };
+
+  /* Real video preview engine — backs the mockup with an actual
+     YouTube / Vimeo embed when the pasted link supports it, so the
+     canvas plays real video with real audio. Falls back to the
+     simulated animation for platforms without an embeddable player
+     (e.g. Twitch) or if the video can't be embedded. */
+  const videoEngine = {
+    type: "none",   // "youtube" | "vimeo" | "none"
+    yt: null,
+    vimeo: null,
+    duration: 0,
+    ready: false
   };
 
   /* ============================================================
@@ -962,12 +1002,17 @@ a{color:inherit}
     step3: document.getElementById("step-3"),
 
     videoFrame: document.getElementById("video-frame"),
+    playerEmbed: document.getElementById("player-embed"),
+    playerLoading: document.getElementById("player-loading"),
     videoTimeBadge: document.getElementById("video-time-badge"),
+    videoRecBadge: document.getElementById("video-rec-badge"),
+    videoRecLabel: document.getElementById("video-rec-label"),
     canvasPlayBtn: document.getElementById("canvas-play-btn"),
     captionOverlay: document.getElementById("caption-overlay"),
 
     timelineTime: document.getElementById("timeline-time"),
     timelineDurationChip: document.getElementById("timeline-duration-chip"),
+    timelineHint: document.getElementById("timeline-hint"),
     waveform: document.getElementById("waveform"),
     timelineTrack: document.getElementById("timeline-track"),
     timelineFill: document.getElementById("timeline-fill"),
@@ -975,6 +1020,7 @@ a{color:inherit}
     handleStart: document.getElementById("handle-start"),
     handleEnd: document.getElementById("handle-end"),
     playToggle: document.getElementById("play-toggle"),
+    muteToggle: document.getElementById("mute-toggle"),
 
     clipList: document.getElementById("clip-list"),
     clipCount: document.getElementById("clip-count"),
@@ -1004,12 +1050,21 @@ a{color:inherit}
   function showToast(message, kind){
     const t = document.createElement("div");
     t.className = "toast " + (kind || "success");
-    t.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><span>' + message + "</span>";
+    const icon = kind === "warn"
+      ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>'
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>';
+    t.innerHTML = icon + "<span>" + message + "</span>";
     el.toastStack.appendChild(t);
     setTimeout(function(){
       t.classList.add("is-leaving");
       setTimeout(function(){ t.remove(); }, 260);
-    }, 3200);
+    }, 3600);
+  }
+
+  function getTotalDuration(){
+    if(videoEngine.ready && videoEngine.duration) return videoEngine.duration;
+    const clip = state.clips[state.selectedClipIndex];
+    return clip ? clip.totalSec : 187;
   }
 
   /* ============================================================
@@ -1226,6 +1281,7 @@ a{color:inherit}
     el.workspaceSub.textContent = state.clips.length + " clips generated from your video";
     renderCanvasAspect();
     renderClipList();
+    initVideoPreview();
     selectClip(0);
     renderWaveform();
     initTimelineDrag();
@@ -1233,10 +1289,230 @@ a{color:inherit}
 
   el.startOverBtn.addEventListener("click", function(){
     if(state.playing) togglePlay(false);
+    teardownVideoPreview();
     setPhase("idle");
     el.workspaceTitle.textContent = "Ready when you are";
     el.workspaceSub.textContent = "Paste a link on the left to start clipping";
   });
+
+  /* ============================================================
+     REAL VIDEO PREVIEW ENGINE (YouTube / Vimeo)
+  ============================================================ */
+  function extractYouTubeId(url){
+    const m = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+    return m ? m[1] : null;
+  }
+  function extractVimeoId(url){
+    const m = url.match(/vimeo\.com\/(?:video\/|channels\/[^\/]+\/|groups\/[^\/]+\/videos\/)?(\d+)/);
+    return m ? m[1] : null;
+  }
+
+  let ytApiPromise = null;
+  function loadYouTubeAPI(){
+    if(ytApiPromise) return ytApiPromise;
+    ytApiPromise = new Promise(function(resolve, reject){
+      if(window.YT && window.YT.Player){ resolve(); return; }
+      const prevReady = window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady = function(){
+        if(typeof prevReady === "function") prevReady();
+        resolve();
+      };
+      const tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api";
+      tag.onerror = reject;
+      document.head.appendChild(tag);
+      setTimeout(reject, 6000);
+    });
+    return ytApiPromise;
+  }
+
+  let vimeoApiPromise = null;
+  function loadVimeoAPI(){
+    if(vimeoApiPromise) return vimeoApiPromise;
+    vimeoApiPromise = new Promise(function(resolve, reject){
+      if(window.Vimeo && window.Vimeo.Player){ resolve(); return; }
+      const tag = document.createElement("script");
+      tag.src = "https://player.vimeo.com/api/player.js";
+      tag.onload = resolve;
+      tag.onerror = reject;
+      document.head.appendChild(tag);
+      setTimeout(reject, 6000);
+    });
+    return vimeoApiPromise;
+  }
+
+  function showPlayerLoading(isLoading){
+    el.videoFrame.classList.toggle("is-player-loading", isLoading);
+  }
+
+  function setLivePreviewBadge(isLive){
+    el.videoRecBadge.classList.toggle("is-live", isLive);
+    el.videoRecLabel.textContent = isLive ? "LIVE PREVIEW" : "SIMULATED";
+  }
+
+  function initVideoPreview(){
+    teardownVideoPreview();
+    const platformKey = state.platform ? state.platform.key : null;
+
+    if(platformKey === "youtube"){
+      const id = extractYouTubeId(state.videoUrl);
+      if(id){ initYouTubePlayer(id); return; }
+    }
+    if(platformKey === "vimeo"){
+      const id = extractVimeoId(state.videoUrl);
+      if(id){ initVimeoPlayer(id); return; }
+    }
+    initFallbackPreview();
+  }
+
+  function teardownVideoPreview(){
+    try{ if(videoEngine.yt && videoEngine.yt.destroy) videoEngine.yt.destroy(); }catch(e){}
+    videoEngine.yt = null;
+    videoEngine.vimeo = null;
+    videoEngine.type = "none";
+    videoEngine.ready = false;
+    videoEngine.duration = 0;
+    el.playerEmbed.innerHTML = "";
+    showPlayerLoading(false);
+    setLivePreviewBadge(false);
+  }
+
+  function initYouTubePlayer(videoId){
+    showPlayerLoading(true);
+    loadYouTubeAPI().then(function(){
+      const holder = document.createElement("div");
+      el.playerEmbed.appendChild(holder);
+      videoEngine.yt = new YT.Player(holder, {
+        videoId: videoId,
+        playerVars: {
+          controls: 0, modestbranding: 1, rel: 0, playsinline: 1,
+          disablekb: 1, fs: 0, iv_load_policy: 3, origin: window.location.origin
+        },
+        events: {
+          onReady: function(e){
+            videoEngine.type = "youtube";
+            videoEngine.ready = true;
+            videoEngine.duration = e.target.getDuration() || getTotalDuration();
+            e.target.mute();
+            state.muted = true;
+            syncMuteButton();
+            showPlayerLoading(false);
+            setLivePreviewBadge(true);
+            onPlayerReady();
+          },
+          onStateChange: function(e){
+            if(e.data === YT.PlayerState.ENDED) handlePlaybackEnded();
+          },
+          onError: function(){
+            showToast("This video can't be embedded for preview — showing a simulated preview instead", "warn");
+            initFallbackPreview();
+            onPlayerReady();
+          }
+        }
+      });
+    }).catch(function(){
+      showToast("Couldn't load the YouTube preview — showing a simulated preview instead", "warn");
+      initFallbackPreview();
+      onPlayerReady();
+    });
+  }
+
+  function initVimeoPlayer(videoId){
+    showPlayerLoading(true);
+    loadVimeoAPI().then(function(){
+      const iframe = document.createElement("iframe");
+      iframe.src = "https://player.vimeo.com/video/" + videoId + "?controls=0&background=0&byline=0&title=0&portrait=0&muted=1";
+      iframe.allow = "autoplay; fullscreen; picture-in-picture";
+      el.playerEmbed.appendChild(iframe);
+      videoEngine.vimeo = new Vimeo.Player(iframe);
+
+      videoEngine.vimeo.getDuration().then(function(d){
+        videoEngine.type = "vimeo";
+        videoEngine.ready = true;
+        videoEngine.duration = d || getTotalDuration();
+        videoEngine.vimeo.setVolume(0);
+        state.muted = true;
+        syncMuteButton();
+        showPlayerLoading(false);
+        setLivePreviewBadge(true);
+        onPlayerReady();
+      }).catch(function(){
+        showToast("This video can't be embedded for preview — showing a simulated preview instead", "warn");
+        initFallbackPreview();
+        onPlayerReady();
+      });
+
+      videoEngine.vimeo.on("timeupdate", function(data){
+        if(videoEngine.type !== "vimeo") return;
+        const clip = state.clips[state.selectedClipIndex];
+        const pct = (data.seconds / getTotalDuration()) * 100;
+        if(state.playing && pct >= clip.end){
+          seekToPct(clip.start);
+        } else {
+          updatePlayheadVisualOnly(pct);
+        }
+      });
+      videoEngine.vimeo.on("ended", handlePlaybackEnded);
+    }).catch(function(){
+      showToast("Couldn't load the Vimeo preview — showing a simulated preview instead", "warn");
+      initFallbackPreview();
+      onPlayerReady();
+    });
+  }
+
+  function initFallbackPreview(){
+    videoEngine.type = "none";
+    videoEngine.ready = false;
+    videoEngine.duration = 0;
+    showPlayerLoading(false);
+    setLivePreviewBadge(false);
+    el.timelineHint.textContent = state.platform && state.platform.key === "twitch"
+      ? "Live preview isn't available for Twitch in this demo — drag the handles to trim"
+      : "Drag the handles to trim this clip";
+  }
+
+  function onPlayerReady(){
+    syncMuteToggleAvailability();
+    selectClip(state.selectedClipIndex);
+  }
+
+  function syncMuteToggleAvailability(){
+    const available = videoEngine.type !== "none";
+    el.muteToggle.classList.toggle("is-disabled", !available);
+    el.muteToggle.title = available
+      ? (state.muted ? "Unmute preview sound" : "Mute preview sound")
+      : "No audio available in simulated preview";
+  }
+
+  function syncMuteButton(){
+    el.muteToggle.classList.toggle("is-muted", state.muted);
+    el.muteToggle.setAttribute("aria-pressed", String(state.muted));
+    syncMuteToggleAvailability();
+  }
+
+  function setMuted(muted){
+    state.muted = muted;
+    if(videoEngine.type === "youtube" && videoEngine.yt){
+      muted ? videoEngine.yt.mute() : videoEngine.yt.unMute();
+    } else if(videoEngine.type === "vimeo" && videoEngine.vimeo){
+      videoEngine.vimeo.setVolume(muted ? 0 : 1);
+    }
+    syncMuteButton();
+  }
+
+  function handlePlaybackEnded(){
+    const clip = state.clips[state.selectedClipIndex];
+    togglePlay(false);
+    seekToPct(clip.start);
+  }
+
+  function seekToPct(pct){
+    const totalDur = getTotalDuration();
+    const t = (pct / 100) * totalDur;
+    if(videoEngine.type === "youtube" && videoEngine.yt) videoEngine.yt.seekTo(t, true);
+    else if(videoEngine.type === "vimeo" && videoEngine.vimeo) videoEngine.vimeo.setCurrentTime(t);
+    updatePlayheadVisualOnly(pct);
+  }
 
   /* ============================================================
      CLIP LIST
@@ -1292,6 +1568,7 @@ a{color:inherit}
   }
 
   function selectClip(index){
+    const wasPlaying = state.playing;
     state.selectedClipIndex = index;
     const clip = state.clips[index];
 
@@ -1300,17 +1577,18 @@ a{color:inherit}
       card.setAttribute("aria-pressed", String(i === index));
     });
 
-    state.playheadPct = clip.start;
     el.timelineFill.style.left = clip.start + "%";
     el.timelineFill.style.right = (100 - clip.end) + "%";
     el.handleStart.style.left = clip.start + "%";
     el.handleEnd.style.left = clip.end + "%";
-    el.handleStart.setAttribute("aria-valuenow", clip.start);
-    el.handleEnd.setAttribute("aria-valuenow", clip.end);
-    updatePlayhead(clip.start);
+    el.handleStart.setAttribute("aria-valuenow", Math.round(clip.start));
+    el.handleEnd.setAttribute("aria-valuenow", Math.round(clip.end));
+
+    seekToPct(clip.start);
+    if(wasPlaying) togglePlay(true);
+
     renderWaveform();
     updateDurationChip();
-    updateVideoTimeBadge();
     renderCaptionOverlay();
     updateExportSummary();
   }
@@ -1348,12 +1626,16 @@ a{color:inherit}
         else if(e.key === "ArrowRight") val += 2;
         else return;
         e.preventDefault();
-        applyTrim(key, val);
+        applyTrim(key, val, true);
       });
     });
 
     el.playToggle.addEventListener("click", function(){ togglePlay(); });
     el.canvasPlayBtn.addEventListener("click", function(){ togglePlay(); });
+    el.muteToggle.addEventListener("click", function(){
+      if(el.muteToggle.classList.contains("is-disabled")) return;
+      setMuted(!state.muted);
+    });
   }
 
   function setupHandleDrag(handle, which){
@@ -1364,19 +1646,21 @@ a{color:inherit}
       function onMove(ev){
         const rect = track.getBoundingClientRect();
         const pct = clamp(((ev.clientX - rect.left) / rect.width) * 100, 0, 100);
-        applyTrim(which, pct);
+        applyTrim(which, pct, false);
       }
       function onUp(ev){
         handle.releasePointerCapture(e.pointerId);
         window.removeEventListener("pointermove", onMove);
         window.removeEventListener("pointerup", onUp);
+        const clip = state.clips[state.selectedClipIndex];
+        seekToPct(which === "start" ? clip.start : clip.end);
       }
       window.addEventListener("pointermove", onMove);
       window.addEventListener("pointerup", onUp);
     });
   }
 
-  function applyTrim(which, pct){
+  function applyTrim(which, pct, seekAfter){
     const clip = state.clips[state.selectedClipIndex];
     pct = clamp(pct, 0, 100);
     if(which === "start"){
@@ -1394,28 +1678,26 @@ a{color:inherit}
     el.timelineFill.style.right = (100 - clip.end) + "%";
     renderWaveform();
     updateDurationChip();
-    updatePlayhead(clip.start);
+    if(seekAfter) seekToPct(which === "start" ? clip.start : clip.end);
+    else updatePlayheadVisualOnly(which === "start" ? clip.start : clip.end);
   }
 
   function updateDurationChip(){
     const clip = state.clips[state.selectedClipIndex];
-    const secs = Math.round(((clip.end - clip.start) / 100) * clip.totalSec);
+    const secs = Math.round(((clip.end - clip.start) / 100) * getTotalDuration());
     el.timelineDurationChip.textContent = "Clip length: " + fmtTime(secs);
   }
 
-  function updatePlayhead(pct){
+  function updatePlayheadVisualOnly(pct){
     state.playheadPct = pct;
     el.timelinePlayhead.style.left = pct + "%";
-    const clip = state.clips[state.selectedClipIndex];
-    const secs = (pct / 100) * clip.totalSec;
-    el.timelineTime.textContent = fmtTime(secs) + " / " + fmtTime(clip.totalSec);
-    updateVideoTimeBadge(secs);
-  }
+    const totalDur = getTotalDuration();
+    const secs = (pct / 100) * totalDur;
+    el.timelineTime.textContent = fmtTime(secs) + " / " + fmtTime(totalDur);
 
-  function updateVideoTimeBadge(currentSecs){
     const clip = state.clips[state.selectedClipIndex];
-    const clipDur = Math.round(((clip.end - clip.start) / 100) * clip.totalSec);
-    const elapsed = currentSecs !== undefined ? Math.max(0, currentSecs - (clip.start / 100) * clip.totalSec) : 0;
+    const clipDur = Math.round(((clip.end - clip.start) / 100) * totalDur);
+    const elapsed = Math.max(0, secs - (clip.start / 100) * totalDur);
     el.videoTimeBadge.textContent = fmtTime(elapsed) + " / " + fmtTime(clipDur);
   }
 
@@ -1425,29 +1707,48 @@ a{color:inherit}
     el.playToggle.classList.toggle("is-playing", state.playing);
     el.canvasPlayBtn.classList.toggle("is-playing", state.playing);
 
+    if(videoEngine.type === "youtube" && videoEngine.yt){
+      state.playing ? videoEngine.yt.playVideo() : videoEngine.yt.pauseVideo();
+    } else if(videoEngine.type === "vimeo" && videoEngine.vimeo){
+      state.playing ? videoEngine.vimeo.play() : videoEngine.vimeo.pause();
+    }
+
     if(state.playing){
       lastTs = null;
-      rafId = requestAnimationFrame(tick);
+      if(videoEngine.type === "youtube") rafId = requestAnimationFrame(pollYouTube);
+      else if(videoEngine.type === "none") rafId = requestAnimationFrame(tickSimulated);
     } else if(rafId){
       cancelAnimationFrame(rafId);
       rafId = null;
     }
   }
 
-  function tick(ts){
+  function pollYouTube(ts){
+    if(!state.playing || videoEngine.type !== "youtube" || !videoEngine.yt) return;
+    const clip = state.clips[state.selectedClipIndex];
+    let cur = 0;
+    try{ cur = videoEngine.yt.getCurrentTime() || 0; }catch(e){}
+    const pct = (cur / getTotalDuration()) * 100;
+    if(pct >= clip.end){
+      seekToPct(clip.start);
+    } else {
+      updatePlayheadVisualOnly(pct);
+    }
+    rafId = requestAnimationFrame(pollYouTube);
+  }
+
+  function tickSimulated(ts){
     if(!state.playing) return;
     if(lastTs === null) lastTs = ts;
     const dt = (ts - lastTs) / 1000;
     lastTs = ts;
 
     const clip = state.clips[state.selectedClipIndex];
-    const speedPctPerSec = 100 / clip.totalSec * 4; // 4x realtime for a snappy demo
+    const speedPctPerSec = (100 / getTotalDuration()) * 4; // 4x realtime for a snappy demo
     let next = state.playheadPct + speedPctPerSec * dt;
-    if(next >= clip.end){
-      next = clip.start;
-    }
-    updatePlayhead(next);
-    rafId = requestAnimationFrame(tick);
+    if(next >= clip.end) next = clip.start;
+    updatePlayheadVisualOnly(next);
+    rafId = requestAnimationFrame(tickSimulated);
   }
 
   /* ============================================================
@@ -1523,6 +1824,7 @@ a{color:inherit}
     renderCanvasAspect();
     el.fontColorHex.textContent = el.fontColor.value.toUpperCase();
     el.strokeColorHex.textContent = el.strokeColor.value.toUpperCase();
+    syncMuteButton();
   }
 
   init();
