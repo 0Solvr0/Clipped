@@ -63,6 +63,31 @@ input,select{font-family:inherit;color:inherit}
 .file-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
 .file-meta{font-size:11.5px;color:var(--text-tertiary);display:flex;justify-content:space-between}
 
+.source-tabs{display:flex;gap:4px;padding:3px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm)}
+.source-tab{flex:1;padding:7px 8px;border:none;border-radius:6px;background:transparent;color:var(--text-tertiary);font-size:12px;font-weight:600;transition:all var(--t-fast)}
+.source-tab:hover{color:var(--text-secondary)}
+.source-tab.is-active{background:var(--bg-card);color:var(--text-primary);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.source-panel{display:none}
+.source-panel.is-active{display:flex;flex-direction:column;gap:10px}
+
+.url-fetch-row{display:flex;gap:8px}
+.url-input-wrap{position:relative;flex:1}
+.url-input{width:100%;padding:11px 40px 11px 36px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-md);font-size:13px;color:var(--text-primary);transition:border-color var(--t-fast),box-shadow var(--t-fast)}
+.url-input::placeholder{color:var(--text-tertiary)}
+.url-input:hover{border-color:var(--border-hover)}
+.url-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);outline:none}
+.url-input-wrap.is-invalid .url-input{border-color:rgba(248,113,113,.5)}
+.url-icon-leading{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--text-tertiary);pointer-events:none}
+.url-load-btn{flex:0 0 auto;padding:0 16px;border-radius:var(--radius-md);background:var(--bg-card);border:1px solid var(--border);color:var(--text-primary);font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:6px;transition:all var(--t-fast)}
+.url-load-btn:hover{border-color:var(--border-hover);background:var(--bg-card-hover)}
+.url-load-btn:disabled{opacity:.5;pointer-events:none}
+.url-load-btn svg{width:13px;height:13px}
+.url-load-btn .spinner{display:none;animation:spin .8s linear infinite}
+.url-load-btn.is-loading .spinner{display:block}
+.url-load-btn.is-loading .icon-default{display:none}
+.url-hint{font-size:11px;color:var(--text-tertiary);line-height:1.5}
+.url-hint b{color:var(--text-secondary)}
+
 .mini-field label{font-size:11.5px;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:6px}
 .select-wrap{position:relative}
 .select-input{width:100%;appearance:none;padding:9px 32px 9px 11px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;transition:border-color var(--t-fast)}
@@ -283,13 +308,37 @@ input,select{font-family:inherit;color:inherit}
   <main class="main-grid">
     <aside class="left-panel">
       <div class="field-group">
-        <label class="field-label"><span class="step-index">1</span>Video file</label>
-        <div class="file-drop" id="file-drop">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
-          <div class="file-drop-title" id="file-drop-title">Drop a video file or click to browse</div>
-          <div class="file-drop-sub" id="file-drop-sub">MP4, MOV, WebM — processed entirely in this tab</div>
-          <input type="file" id="file-input" accept="video/*">
+        <label class="field-label"><span class="step-index">1</span>Video source</label>
+
+        <div class="source-tabs" role="tablist">
+          <button type="button" class="source-tab is-active" id="tab-upload" role="tab" aria-selected="true">Upload file</button>
+          <button type="button" class="source-tab" id="tab-url" role="tab" aria-selected="false">Video URL</button>
         </div>
+
+        <div class="source-panel is-active" id="source-panel-upload">
+          <div class="file-drop" id="file-drop">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+            <div class="file-drop-title" id="file-drop-title">Drop a video file or click to browse</div>
+            <div class="file-drop-sub" id="file-drop-sub">MP4, MOV, WebM — processed entirely in this tab</div>
+            <input type="file" id="file-input" accept="video/*">
+          </div>
+        </div>
+
+        <div class="source-panel" id="source-panel-url">
+          <div class="url-fetch-row">
+            <div class="url-input-wrap" id="url-input-wrap">
+              <svg class="url-icon-leading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.07 0l2.83-2.83a5 5 0 00-7.07-7.07l-1 1"/><path d="M14 11a5 5 0 00-7.07 0L4.1 13.83a5 5 0 007.07 7.07l1-1"/></svg>
+              <input type="url" id="video-url-input" class="url-input" placeholder="https://example.com/video.mp4" autocomplete="off" spellcheck="false">
+            </div>
+            <button class="url-load-btn" id="url-load-btn" type="button">
+              <svg class="icon-default" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+              <svg class="spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 11-9-9" stroke-linecap="round"/></svg>
+              <span id="url-load-btn-label">Load</span>
+            </button>
+          </div>
+          <div class="url-hint" id="url-hint">Needs a <b>direct link to a video file</b> (ends in .mp4/.webm/.mov) whose host allows cross-origin requests — not a YouTube/Vimeo/Twitch page link, since browsers can't download those directly.</div>
+        </div>
+
         <div class="file-meta" id="file-meta" style="display:none">
           <span id="file-meta-name"></span><span id="file-meta-size"></span>
         </div>
@@ -584,6 +633,8 @@ let cachedClipIndex=-1, cachedLines=[];
 
 const el={};
 ["file-drop","file-input","file-drop-title","file-drop-sub","file-meta","file-meta-name","file-meta-size",
+ "tab-upload","tab-url","source-panel-upload","source-panel-url",
+ "video-url-input","url-input-wrap","url-load-btn","url-load-btn-label","url-hint",
  "model-size","ratio-group","captions-accordion","accordion-trigger","captions-toggle","captions-fields",
  "font-family","font-color","font-color-hex","stroke-color","stroke-color-hex","caption-style",
  "submit-btn","submit-btn-label","workspace-title","workspace-sub","start-over-btn",
@@ -625,6 +676,67 @@ el.fileInput.addEventListener("change", e=> handleFile(e.target.files[0]));
 ["dragleave","drop"].forEach(evt=> el.fileDrop.addEventListener(evt, e=>{ e.preventDefault(); el.fileDrop.classList.remove("is-dragover"); }));
 el.fileDrop.addEventListener("drop", e=>{ const f=e.dataTransfer.files[0]; if(f) handleFile(f); });
 el.modelSize.addEventListener("change", ()=>{ state.modelId = el.modelSize.value; });
+
+/* ---------------- source tabs: upload file vs. paste URL ---------------- */
+function setSourceMode(mode){
+  el.tabUpload.classList.toggle("is-active", mode==="upload");
+  el.tabUrl.classList.toggle("is-active", mode==="url");
+  el.tabUpload.setAttribute("aria-selected", String(mode==="upload"));
+  el.tabUrl.setAttribute("aria-selected", String(mode==="url"));
+  el.sourcePanelUpload.classList.toggle("is-active", mode==="upload");
+  el.sourcePanelUrl.classList.toggle("is-active", mode==="url");
+}
+el.tabUpload.addEventListener("click", ()=> setSourceMode("upload"));
+el.tabUrl.addEventListener("click", ()=> setSourceMode("url"));
+
+const PAGE_LINK_PATTERNS = [
+  { re:/(youtube\.com|youtu\.be)/i, name:"YouTube" },
+  { re:/vimeo\.com/i, name:"Vimeo" },
+  { re:/twitch\.tv/i, name:"Twitch" },
+];
+
+async function handleUrlFetch(){
+  const raw = el.videoUrlInput.value.trim();
+  el.urlInputWrap.classList.remove("is-invalid");
+  if(!raw){ el.urlInputWrap.classList.add("is-invalid"); return; }
+
+  let parsed;
+  try{ parsed = new URL(raw); }
+  catch(e){ el.urlInputWrap.classList.add("is-invalid"); showToast("That doesn't look like a valid URL.","warn"); return; }
+
+  const pageMatch = PAGE_LINK_PATTERNS.find(p=>p.re.test(raw));
+  if(pageMatch){
+    el.urlInputWrap.classList.add("is-invalid");
+    showToast("That's a "+pageMatch.name+" page link — browsers can't download video from it directly. Paste a direct file link (ending in .mp4 etc), or use Upload file instead.","warn");
+    return;
+  }
+
+  el.urlLoadBtn.classList.add("is-loading"); el.urlLoadBtn.disabled = true;
+  el.urlLoadBtnLabel.textContent = "Loading…";
+  try{
+    const res = await fetch(parsed.href, { mode:"cors" });
+    if(!res.ok) throw new Error("Server responded with "+res.status);
+    const contentType = res.headers.get("content-type") || "";
+    const blob = await res.blob();
+    if(!contentType.startsWith("video/") && blob.type && !blob.type.startsWith("video/")){
+      throw new Error("That URL didn't return a video file (got \""+(contentType||blob.type||"unknown")+"\").");
+    }
+    const filename = decodeURIComponent(parsed.pathname.split("/").pop() || "video-from-url.mp4") || "video-from-url.mp4";
+    const file = new File([blob], filename, { type: blob.type || contentType || "video/mp4" });
+    handleFile(file);
+    el.urlLoadBtnLabel.textContent = "Loaded";
+    setTimeout(()=>{ el.urlLoadBtnLabel.textContent = "Load"; }, 1800);
+  }catch(err){
+    console.error(err);
+    showToast("Couldn't load that URL. Make sure it's a direct video file link and the host allows cross-origin requests (CORS). "+(err.message||""), "warn");
+    el.urlLoadBtnLabel.textContent = "Load";
+  }finally{
+    el.urlLoadBtn.classList.remove("is-loading"); el.urlLoadBtn.disabled = false;
+  }
+}
+el.urlLoadBtn.addEventListener("click", handleUrlFetch);
+el.videoUrlInput.addEventListener("keydown", e=>{ if(e.key==="Enter") handleUrlFetch(); });
+el.videoUrlInput.addEventListener("input", ()=> el.urlInputWrap.classList.remove("is-invalid"));
 
 /* ---------------- aspect / accordion / caption controls ---------------- */
 el.ratioGroup.addEventListener("click", e=>{
