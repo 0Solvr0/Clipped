@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Viral Clip Generator</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --panel-dark: #1e293b;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            background-color: var(--panel-dark);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Left Column: Controls */
+        .controls-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .description {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background-color: var(--bg-dark);
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus, select:focus {
+            border-color: var(--accent);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .checkbox-group input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent);
+        }
+
+        .btn-submit {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 1rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 1rem;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--accent-hover);
+        }
+
+        /* Right Column: Preview Panel */
+        .preview-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--bg-dark);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 2px dashed #334155;
+            min-height: 400px;
+            position: relative;
+        }
+
+        .video-canvas {
+            background-color: #000;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        /* Dynamic Aspect Ratios */
+        .ratio-9-16 { width: 225px; height: 400px; }
+        .ratio-1-1 { width: 350px; height: 350px; }
+        .ratio-16-9 { width: 400px; height: 225px; }
+
+        .placeholder-text {
+            color: #475569;
+            font-size: 0.9rem;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .subtitle-overlay {
+            position: absolute;
+            bottom: 20%;
+            left: 5%;
+            right: 5%;
+            text-align: center;
+            font-weight: 900;
+            text-transform: uppercase;
+            text-shadow: 2px 2px 0px #000, -2px -2px 0px #000, 2px -2px 0px #000, -2px 2px 0px #000;
+            pointer-events: none;
+            display: none;
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Configuration Column -->
+    <div class="controls-panel">
+        <div>
+            <h1>AI Video Clipper</h1>
+            <p class="description">Paste your link, customize your layout styles, and let the AI extract high-engagement shorts.</p>
+        </div>
+
+        <div class="input-group">
+            <label for="videoLink">Video URL</label>
+            <input type="text" id="videoLink" placeholder="YouTube, Twitch, or Vimeo link...">
+        </div>
+
+        <div class="input-group">
+            <label for="aspectRatio">Crop Layout</label>
+            <select id="aspectRatio">
+                <option value="ratio-9-16">9:16 (TikTok / Shorts)</option>
+                <option value="ratio-1-1">1:1 (Square / Instagram)</option>
+                <option value="ratio-16-9">16:9 (Landscape / Standard)</option>
+            </select>
+        </div>
+
+        <div class="checkbox-group">
+            <input type="checkbox" id="toggleSubs" checked>
+            <label for="toggleSubs" style="cursor:pointer; color: var(--text-main);">Auto-Generate Subtitles</label>
+        </div>
+
+        <div class="input-group">
+            <label for="fontStyle">Subtitle Font</label>
+            <select id="fontStyle">
+                <option value="'Impact', sans-serif">Impact (Viral Style)</option>
+                <option value="'Arial Black', sans-serif">Arial Black</option>
+                <option value="'Courier New', monospace">Typewriter / Courier</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label for="fontColor">Subtitle Color</label>
+            <select id="fontColor">
+                <option value="#FFFF00">Electric Yellow</option>
+                <option value="#00FFFF">Cyan Blue</option>
+                <option value="#FFFFFF">Clean White</option>
+            </select>
+        </div>
+
+        <button class="btn-submit" id="generateBtn">Find Viral Moments</button>
+    </div>
+
+    <!-- Live Preview Column -->
+    <div class="preview-panel">
+        <div class="video-canvas ratio-9-16" id="videoPreview">
+            <div class="placeholder-text" id="placeholder">Video Preview Frame</div>
+            <div class="subtitle-overlay" id="subOverlay">VIRAL MOMENT!🔥</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Elements
+    const aspectRatioSelect = document.getElementById('aspectRatio');
+    const toggleSubsCheckbox = document.getElementById('toggleSubs');
+    const fontStyleSelect = document.getElementById('fontStyle');
+    const fontColorSelect = document.getElementById('fontColor');
+    const videoPreview = document.getElementById('videoPreview');
+    const subOverlay = document.getElementById('subOverlay');
+    const generateBtn = document.getElementById('generateBtn');
+    const placeholder = document.getElementById('placeholder');
+
+    // Live update functions
+    function updatePreview() {
+        // Handle Aspect Ratio
+        videoPreview.className = 'video-canvas ' + aspectRatioSelect.value;
+        
+        // Handle Subtitles Visibility
+        if (toggleSubsCheckbox.checked) {
+            subOverlay.style.display = 'block';
+        } else {
+            subOverlay.style.display = 'none';
+        }
+
+        // Handle Font Style & Color
+        subOverlay.style.fontFamily = fontStyleSelect.value;
+        subOverlay.style.color = fontColorSelect.value;
+    }
+
+    // Event Listeners for real-time adjustments
+    aspectRatioSelect.addEventListener('change', updatePreview);
+    toggleSubsCheckbox.addEventListener('change', updatePreview);
+    fontStyleSelect.addEventListener('change', updatePreview);
+    fontColorSelect.addEventListener('change', updatePreview);
+
+    // Mock processing execution
+    generateBtn.addEventListener('click', () => {
+        generateBtn.innerText = 'Analyzing Video data...';
+        placeholder.innerText = 'Scanning transcripts & audio spikes...';
+        
+        setTimeout(() => {
+            generateBtn.innerText = 'Find Viral Moments';
+            placeholder.innerText = '✨ Found 3 viral clips! Playing high-scoring hook segment.';
+            updatePreview();
+        }, 2000);
+    });
+
+    // Run on initialization
+    updatePreview();
+</script>
+
+</body>
+</html>
